@@ -1,0 +1,7 @@
+{
+    "zonas": [
+        { "nombre": "Centro", "pm25": 95, "pm10": 120 },
+        { "nombre": "Norte", "pm25": 35, "pm10": 45 },
+        { "nombre": "Sur", "pm25": 80, "pm10": 100 }
+    ]
+}
