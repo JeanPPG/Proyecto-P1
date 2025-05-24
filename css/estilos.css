@@ -20,13 +20,15 @@ h4 {
 
 /* Header principal */
 header {
-    background: url('https://images.unsplash.com/photo-1532581140115-c1d4f7bfb434?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
+    background: url('https://www.radiopichincha.com/wp-content/uploads/2024/01/IMAGEN-PORTADA-28.png') center/cover no-repeat;
     color: white;
-    padding: 100px 20px;
+    padding: 150px 20px;
 }
 
 header h1 {
-    font-size: 3rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+    font-size: 4rem;
     font-weight: bold;
 }
 
