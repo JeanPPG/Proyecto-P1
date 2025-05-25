@@ -106,3 +106,14 @@ form input,
 form textarea {
     border-radius: 0.5rem;
 }
+
+.soluciones-section {
+    background-color: #f9fafa;
+    padding-top: 60px;
+    padding-bottom: 60px;
+    border-radius: 12px;
+}
+.soluciones-section ul li {
+    background-color: #ffffff;
+    border-left: 5px solid #28a745;
+}
