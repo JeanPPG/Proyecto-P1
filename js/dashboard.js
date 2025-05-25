@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar el gráfico de líneas PM2.5
     const ctx = document.getElementById('graficoPM25').getContext('2d');
     const grafico = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: ['08:00', '10:00', '12:00', '14:00', '16:00'],
             datasets: [{
