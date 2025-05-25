@@ -1,100 +1,132 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar el gráfico de líneas PM2.5
-    const ctx = document.getElementById('graficoPM25').getContext('2d');
-    const grafico = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['08:00', '10:00', '12:00', '14:00', '16:00'],
-            datasets: [{
-                label: 'PM2.5',
-                data: [45, 60, 75, 80, 65],
-                borderColor: 'rgba(220, 53, 69, 1)',
-                backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                fill: true,
-                tension: 0.3
-            }]
-        }
-    });
+    const coordenadasESPE = [-0.3127, -78.4461];
+    const mapa = L.map('mapa').setView(coordenadasESPE, 13);
 
-    // Coordenadas de la ESPE y Quito
-    const coordenadasESPE = [-0.3127, -78.4461]; // Latitud, Longitud de la ESPE (Campus Sangolquí)
-    
-    // Centrar mapa en la ESPE en lugar de Quito para asegurar que sea visible
-    const mapa = L.map('mapa').setView(coordenadasESPE, 13); // Zoom aumentado para ver mejor
-    
-    // Añadir la capa de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mapa);
-    
-    // Agregar un marcador para la ESPE (más visible que solo el círculo)
-    const marcadorESPE = L.marker(coordenadasESPE).addTo(mapa)
+
+    L.marker(coordenadasESPE).addTo(mapa)
         .bindPopup("<b>Universidad de las Fuerzas Armadas ESPE</b>")
         .openPopup();
-    
-    // Crear círculo rojo para la ESPE con radio más grande
+
     L.circle(coordenadasESPE, {
-        color: "#dc3545",        // Color rojo
-        fillColor: "#dc3545",    // Relleno rojo
-        fillOpacity: 0.7,        // Más opaco para destacar
-        radius: 1200              // Radio aumentado a 1200m para mayor visibilidad
+        color: "#dc3545",
+        fillColor: "#dc3545",
+        fillOpacity: 0.7,
+        radius: 1200
     }).addTo(mapa).bindPopup(
         "<b>Universidad de las Fuerzas Armadas ESPE</b><br>" +
         "PM2.5: 90 µg/m³<br>" +
         "PM10: 115 µg/m³<br>" +
-        "<span style='color:#dc3545'>●</span> Calidad del aire mala"
+        "<span style='color:#dc3545'>●</span> Calidad del aire mala<br> "+
+        "<button onclick=\"seleccionarZona('ESPE')\">Ver gráfico horario</button>"
     );
-    
-    console.log("Círculo de la ESPE añadido al mapa"); // Verificación en consola
-    
-    // Cargar datos de contaminación
-    fetch('data/calidad_aire.json')
-        .then(response => response.json())
-        .then(data => {
-            // Definir coordenadas para las zonas (ejemplo - ajustar según ubicaciones reales)
-            const ubicaciones = {
-                "Centro": [-0.2200, -78.5100],
-                "Norte": [-0.1500, -78.4800],
-                "Sur": [-0.2500, -78.5300]
-            };
-            
-            // Mostrar zonas con contaminación
-            data.zonas.forEach(zona => {
-                // Determinar el color según el nivel de PM2.5
-                let color = "#28a745"; // Verde por defecto
-                if (zona.pm25 > 75) {
-                    color = "#dc3545"; // Rojo para alta contaminación
-                } else if (zona.pm25 > 35) {
-                    color = "#ffc107"; // Amarillo para media contaminación
+
+    const dataCalidadAire = {
+        zonas: [
+            { nombre: "Centro", pm25: 95, pm10: 120 },
+            { nombre: "Norte", pm25: 35, pm10: 45 },
+            { nombre: "Sur", pm25: 80, pm10: 100 },
+        ]
+    };
+
+    const ubicaciones = {
+        "Centro": [-0.2200, -78.5100],
+        "Norte": [-0.1500, -78.4800],
+        "Sur": [-0.2500, -78.5300]
+    };
+
+    const horas = ['08:00', '10:00', '12:00', '14:00', '16:00'];
+
+    // Simulación de niveles horarios de PM2.5 por zona
+    const nivelesHorarios = {
+        "Centro": [90, 100, 110, 95, 85],
+        "Norte": [20, 30, 40, 35, 25],
+        "Sur": [60, 70, 85, 80, 75],
+        "ESPE": [90, 95, 100, 90, 85]
+    };
+
+    const ctx = document.getElementById('graficoPM25').getContext('2d');
+    let grafico = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: horas,
+            datasets: [{
+                label: 'PM2.5',
+                data: [],
+                backgroundColor: []
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 150,
+                    title: {
+                        display: true,
+                        text: 'µg/m³'
+                    }
                 }
-                
-                if (ubicaciones[zona.nombre]) {
-                    // Crear círculo para representar la zona y su nivel de contaminación
-                    L.circle(ubicaciones[zona.nombre], {
-                        color: color,
-                        fillColor: color,
-                        fillOpacity: 0.5,
-                        radius: 1000 // Radio de 1km
-                    }).addTo(mapa).bindPopup(
-                        `<b>Zona: ${zona.nombre}</b><br>
-                        PM2.5: ${zona.pm25} µg/m³<br>
-                        PM10: ${zona.pm10} µg/m³<br>
-                        <span style="color:${color}">●</span> ${getCalidadAire(zona.pm25)}`
-                    );
-                }
-            });
-        }).catch(error => {
-            console.error("Error cargando datos de calidad del aire:", error);
+            }
+        }
+    });
+
+    function actualizarGrafico(zonaNombre) {
+        const datos = nivelesHorarios[zonaNombre];
+        const colores = datos.map(pm25 => {
+            if (pm25 > 75) return '#dc3545'; // rojo
+            if (pm25 > 35) return '#ffc107'; // amarillo
+            return '#28a745';                // verde
         });
-    
-    // Función para determinar la calidad del aire
+
+        grafico.data.datasets[0].data = datos;
+        grafico.data.datasets[0].backgroundColor = colores;
+        grafico.options.plugins = {
+            title: {
+                display: true,
+                text: `Nivel PM2.5 en ${zonaNombre} durante el día`
+            }
+        };
+        grafico.update();
+    }
+
+    dataCalidadAire.zonas.forEach(zona => {
+        const color = zona.pm25 > 75 ? '#dc3545' :
+                      zona.pm25 > 35 ? '#ffc107' : '#28a745';
+
+        const coords = ubicaciones[zona.nombre];
+        if (coords) {
+            const circulo = L.circle(coords, {
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.5,
+                radius: 1000
+            }).addTo(mapa);
+
+            circulo.bindPopup(
+                `<b>Zona: ${zona.nombre}</b><br>
+                PM2.5: ${zona.pm25} µg/m³<br>
+                PM10: ${zona.pm10} µg/m³<br>
+                <span style="color:${color}">●</span> ${getCalidadAire(zona.pm25)}<br><br>
+                <button onclick="seleccionarZona('${zona.nombre}')">Ver gráfico horario</button>`
+            );
+        }
+    });
+
+    // Hacer accesible globalmente la función de selección
+    window.seleccionarZona = function(zonaNombre) {
+        actualizarGrafico(zonaNombre);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     function getCalidadAire(pm25) {
         if (pm25 > 75) return "Calidad del aire mala";
         if (pm25 > 35) return "Calidad del aire moderada";
         return "Calidad del aire buena";
     }
 
-    // Recomendaciones según calidad del aire
     const recomendaciones = [
         "Evite hacer ejercicio al aire libre en zonas rojas.",
         "Use mascarilla si debe transitar por zonas con alta contaminación.",
@@ -109,4 +141,3 @@ document.addEventListener('DOMContentLoaded', () => {
         ul.appendChild(li);
     });
 });
-
