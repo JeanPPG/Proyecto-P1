@@ -31,12 +31,6 @@ Concienciar a la población sobre los efectos de la contaminación del aire y of
 
 ---
 
-## 📸 Vista previa
-
-> *(Agrega aquí una imagen del dashboard si lo deseas)*
-
----
-
 ## 💡 Cómo usar
 
 1. Clona o descarga el repositorio.
