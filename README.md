@@ -42,7 +42,11 @@ Concienciar a la población sobre los efectos de la contaminación del aire y of
 ## 🧠 Créditos
 
 Este proyecto fue desarrollado como parte de un trabajo académico para visualizar y combatir la problemática ambiental del aire contaminado en zonas urbanas.
-
+Creadores:
+- César González
+- David Teneguzñay
+- Jean Piere Peñaranda
+- David Ortega
 ---
 
 ## 📬 Contacto
