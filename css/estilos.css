@@ -27,7 +27,7 @@ header {
 
 header h1 {
     color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     font-size: 4rem;
     font-weight: bold;
 }
@@ -113,7 +113,19 @@ form textarea {
     padding-bottom: 60px;
     border-radius: 12px;
 }
+
 .soluciones-section ul li {
     background-color: #ffffff;
     border-left: 5px solid #28a745;
+}
+
+.info-section {
+    padding: 60px 0;
+}
+
+footer {
+    background-color: #212529;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
 }
