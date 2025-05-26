@@ -1,9 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const coordenadasESPE = [-0.316607, -78.442051];
     const mapa = L.map('mapa').setView(coordenadasESPE, 13);
-
+  
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mapa);
+
+    const limiteDMQ = L.tileLayer.wms('https://geomdmq.quito.gob.ec:8443/geoserver/smiq/wms', {
+    layers: 'limite_dmq_a',
+    format: 'image/png',
+    transparent: true,
+    attribution: 'MDMQ Geoserver',
     }).addTo(mapa);
 
     L.circle(coordenadasESPE, {
