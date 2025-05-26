@@ -1,11 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Coordenadas de la ESPE
     const coordenadasESPE = [-0.316607, -78.442051];
+    // Inicializa el mapa centrado en ESPE
     const mapa = L.map('mapa').setView(coordenadasESPE, 13);
-
+  
+    // Capa base de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mapa);
 
+    // Capa WMS del límite del DMQ
+    const limiteDMQ = L.tileLayer.wms('https://geomdmq.quito.gob.ec:8443/geoserver/smiq/wms', {
+        layers: 'limite_dmq_a',
+        format: 'image/png',
+        transparent: true,
+        attribution: 'MDMQ Geoserver',
+    }).addTo(mapa);
+
+    // Círculo para la ESPE con popup informativo
     L.circle(coordenadasESPE, {
         color: "#dc3545",
         fillColor: "#dc3545",
@@ -19,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "<button onclick=\"seleccionarZona('ESPE')\">Ver gráfico horario</button>"
     );
 
+    // Datos de calidad de aire por zona
     const dataCalidadAire = {
         zonas: [
             { nombre: "Centro Histórico", pm25: 79, pm10: 130 },
@@ -36,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    // Coordenadas de cada zona
     const ubicaciones = {
         "Centro Histórico": [-0.2211, -78.5125],
         "La Marín": [-0.2207, -78.5075],
@@ -51,24 +65,27 @@ document.addEventListener('DOMContentLoaded', () => {
         "Belisario": [-0.189187, -78.506330]
     };
 
+    // Horas del día para el gráfico
     const horas = ['07:00', '10:00', '12:00', '14:00', '17:00'];
 
+    // Niveles horarios de PM2.5 por zona
     const nivelesHorarios = {
         "Centro Histórico": [65, 75, 105, 97, 55],
         "La Marín": [45, 55, 92, 89, 50],
         "El Trébol": [60, 72, 84, 55, 38],
         "La Ofelia": [35, 40, 43, 41, 30],
         "Quitumbe": [38, 52, 78, 60, 35],
-        "ESPE": [90, 95, 100, 90, 85],
+        "ESPE": [65, 60, 75, 65, 80],
         "Parque Metropolitano": [10, 12, 13, 11, 9],
         "Cumbayá": [18, 20, 21, 19, 17],
         "Tumbaco": [22, 25, 26, 24, 20],
         "El Condado": [14, 16, 17, 15, 13],
         "La Armenia": [20, 22, 23, 21, 18],
-        "La Carolina": [85, 78, 80, 70, 90], // Valores modificados para un promedio > 75
+        "La Carolina": [85, 78, 80, 70, 90], 
         "Belisario": [50, 55, 60, 58, 52],
     };
 
+    // Inicializa el gráfico de barras vacío
     const ctx = document.getElementById('graficoPM25').getContext('2d');
     let grafico = new Chart(ctx, {
         type: 'bar',
@@ -95,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Genera recomendaciones según los niveles horarios de PM2.5
     const generarRecomendaciones = (zonaNombre) => {
         const ul = document.getElementById("listaRecomendaciones");
         ul.innerHTML = "";
@@ -115,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Actualiza el gráfico con los datos de la zona seleccionada
     function actualizarGrafico(zonaNombre) {
         const datos = nivelesHorarios[zonaNombre];
         const colores = datos.map(pm25 => {
@@ -134,25 +153,23 @@ document.addEventListener('DOMContentLoaded', () => {
         grafico.update();
     }
 
-
+    // Calcula el promedio de un arreglo
     const calcularPromedio = (arr) => arr.reduce((acc, val) => acc + val, 0) / arr.length;
 
-    // Función flecha para determinar el color según el valor PM2.5
+    // Determina el color según el valor de PM2.5
     const determinarColor = (valor) => 
         valor > 75 ? '#dc3545' : 
         valor > 35 ? '#ffc107' : 
         '#28a745';
 
+    // Dibuja los círculos de cada zona en el mapa
     dataCalidadAire.zonas.forEach(zona => {
-        // Obtener los datos horarios de la zona
         const datosHorarios = nivelesHorarios[zona.nombre];
         
-        // Si existen datos horarios, calcular el promedio
         const promedioPM25 = datosHorarios ? 
             calcularPromedio(datosHorarios) : 
-            zona.pm25; // Si no hay datos horarios, usar el valor actual
+            zona.pm25;
         
-        // Determinar el color basado en el promedio
         const color = determinarColor(promedioPM25);
 
         const coords = ubicaciones[zona.nombre];
@@ -175,12 +192,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Función global para seleccionar una zona y actualizar gráfico y recomendaciones
     window.seleccionarZona = function(zonaNombre) {
         actualizarGrafico(zonaNombre);
         generarRecomendaciones(zonaNombre);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // Devuelve la descripción de la calidad del aire según el valor de PM2.5
     function getCalidadAire(pm25) {
         if (pm25 > 75) return "Calidad del aire mala";
         if (pm25 > 35) return "Calidad del aire moderada";
